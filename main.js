@@ -108,6 +108,11 @@ function updateTrayMenu() {
       click: () => pauseDetection(60)
     },
     {
+      label: 'Disable until its Enable',
+      enabled: !isDetectionPaused,
+      click: disableDetection
+    },
+    {
       label: 'Enable Now',
       enabled: isDetectionPaused,
       click: enableDetection
@@ -132,6 +137,11 @@ function pauseDetection(minutes) {
   updateTrayMenu();
   if (disableTimeout) clearTimeout(disableTimeout);
   disableTimeout = setTimeout(enableDetection, minutes * 60 * 1000);
+}
+function disableDetection() {
+  isDetectionPaused = true;
+  if (mainWindow) mainWindow.webContents.send('pause-detection', true);
+  updateTrayMenu();
 }
 
 function enableDetection() {
