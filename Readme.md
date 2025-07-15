@@ -3,7 +3,7 @@
 **time-quacker** is a desktop application built with **Electron** that leverages hand gesture recognition to announce the current time and automate various actions. Designed for productivity and accessibility, it provides a hands-free way to interact with your computer.
 
 **GitHub Repository:**  
-[github.com/10sp/time-quacker/tree/main](https://github.com/10sp/time-quacker/tree/main)
+[github.com/Hara-XY-Innovation-Lab/time-quacker/tree/main](https://github.com/10sp/time-quacker/tree/main)
 
 ## Features
 
