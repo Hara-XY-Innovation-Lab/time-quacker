@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: file:;"> -->
   <title>Time Quacker 🦆</title>
   <meta name="viewport" content="width=700, initial-scale=1">
   <style>
@@ -16,32 +15,29 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      transition: background 0.5s;
     }
     .container {
       background: rgba(255,255,255,0.93);
-      box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+      box-shadow: 0 8px 32px rgba(31,38,135,0.18);
       border-radius: 20px;
-      padding: 36px 36px 30px 36px;
+      padding: 36px;
       margin-top: 48px;
       min-width: 420px;
       max-width: 700px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      transition: box-shadow 0.3s;
     }
     #webcam {
       background: #e0e7ff;
       border-radius: 14px;
-      box-shadow: 0 2px 16px 0 rgba(0,0,0,0.11);
+      box-shadow: 0 2px 16px rgba(0,0,0,0.11);
       margin: 0 auto 24px auto;
       display: block;
       width: 600px;
       max-width: 95vw;
       height: 450px;
       object-fit: cover;
-      transition: box-shadow 0.3s;
     }
     #status {
       font-size: 20px;
@@ -50,7 +46,6 @@
       letter-spacing: 0.5px;
       min-height: 28px;
       font-weight: 500;
-      text-shadow: 0 1px 0 rgba(255,255,255,0.4);
     }
     #time {
       font-size: 44px;
@@ -58,33 +53,34 @@
       color: #2563eb;
       margin-bottom: 10px;
       letter-spacing: 1.5px;
-      text-shadow: 0 2px 6px rgba(37,99,235,0.13);
-      transition: opacity 0.3s;
     }
     .hidden { display: none; }
     .duck {
       font-size: 48px;
-      margin-bottom: 0;
-      margin-top: 0;
-      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.08));
-      user-select: none;
-      pointer-events: none;
-    }
-    @media (max-width: 700px) {
-      .container { min-width: 0; padding: 16px; }
-      #webcam { width: 98vw; height: 56vw; min-height: 220px; }
+      margin: 0;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="duck">🦆</div>
-    <div id="status">Waiting for hand detection...</div>
+    <div id="status">Waiting for face detection...</div>
     <div id="time" class="hidden"></div>
     <video id="webcam" width="600" height="450" autoplay playsinline></video>
+
+    <div style="margin-top: 16px;">
+      <!-- Pomodoro is now always face-triggered, so removed hand/face toggle! -->
+      <label><input type="checkbox" id="reminderToggle" checked> Enable Reminders</label><br><br>
+      <button onclick="pomodoro.start()">Start</button>
+      <button onclick="pomodoro.pause()">Pause</button>
+      <button onclick="pomodoro.resume()">Resume</button>
+      <button onclick="pomodoro.reset()">Reset</button>
+    </div>
   </div>
+
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-  <script src="renderer.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+  <script type="module" src="renderer.js"></script>
 </body>
 </html>
