@@ -67,17 +67,14 @@
     <div id="status">Waiting for face detection...</div>
     <div id="time" class="hidden"></div>
     <video id="webcam" width="600" height="450" autoplay playsinline></video>
-
     <div style="margin-top: 16px;">
-      <!-- Pomodoro is now always face-triggered, so removed hand/face toggle! -->
       <label><input type="checkbox" id="reminderToggle" checked> Enable Reminders</label><br><br>
-      <button onclick="pomodoro.start()">Start</button>
-      <button onclick="pomodoro.pause()">Pause</button>
-      <button onclick="pomodoro.resume()">Resume</button>
-      <button onclick="pomodoro.reset()">Reset</button>
+      <button onclick="window.Pomodoro.startPomodoro()">Start</button>
+      <button onclick="window.Pomodoro.pausePomodoro()">Pause</button>
+      <button onclick="window.Pomodoro.resumePomodoro()">Resume</button>
+      <button onclick="window.Pomodoro.resetPomodoro()">Reset</button>
     </div>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>

@@ -8,10 +8,6 @@ let selectedCameraId = null;
 let isDetectionPaused = false;
 let disableTimeout = null;
 
-
-
-
-
 const splashDir = path.join(__dirname, 'Assets', 'splash');
 let splashShufflePool = [];
 
@@ -22,18 +18,14 @@ function getSplashImages() {
 }
 
 function getRandomSplashImage() {
-  // Refill and shuffle if pool is empty
   if (splashShufflePool.length === 0) {
     const allImages = getSplashImages();
-    // Fisher-Yates shuffle
     for (let i = allImages.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [allImages[i], allImages[j]] = [allImages[j], allImages[i]];
     }
     splashShufflePool = allImages;
   }
-
-  // Pop the next image from the shuffled pool
   const chosen = splashShufflePool.pop();
   if (!chosen) return null;
   const absPath = path.join(splashDir, chosen);
@@ -41,7 +33,7 @@ function getRandomSplashImage() {
 }
 
 function createSplashWindow() {
-  const splashImage = getRandomSplashImage(); // Now returns file://... URL
+  const splashImage = getRandomSplashImage();
   splashWindow = new BrowserWindow({
     width: 480,
     height: 320,
@@ -64,7 +56,7 @@ function createMainWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      backgroundThrottling: false // <-- Add this line
+      backgroundThrottling: false
     }
   });
   mainWindow.loadFile(path.join('renderer', 'index.html'));
@@ -143,7 +135,6 @@ function disableDetection() {
   if (mainWindow) mainWindow.webContents.send('pause-detection', true);
   updateTrayMenu();
 }
-
 function enableDetection() {
   isDetectionPaused = false;
   if (mainWindow) mainWindow.webContents.send('pause-detection', false);
