@@ -1,4 +1,4 @@
-const { BrowserWindow } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { getRandomSplashImage } = require('./splashImageManager');
 
@@ -12,9 +12,15 @@ function createSplashWindow() {
     transparent: true,
     resizable: false,
     show: true,
-    webPreferences: { preload: path.join(__dirname, 'preload.js') }
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js')
+    }
   });
-  splashWindow.loadFile(path.join('renderer', 'splash.html'), { query: { img: splashImage } });
+
+  splashWindow.loadFile(path.join('renderer', 'splash.html'), {
+    query: { img: splashImage }
+  });
+
   return splashWindow;
 }
 
@@ -43,4 +49,7 @@ function createMainWindow() {
   return mainWindow;
 }
 
-module.exports = { createSplashWindow, createMainWindow };
+module.exports = {
+  createSplashWindow,
+  createMainWindow
+};

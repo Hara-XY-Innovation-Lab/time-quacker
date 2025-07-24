@@ -1,4 +1,4 @@
-const { Tray, Menu, nativeImage } = require('electron');
+const { app, Tray, Menu, nativeImage } = require('electron'); // ✅ Fixed import
 const path = require('path');
 const { selectedCameraId, cameraList, setSelectedCamera } = require('./cameraManager');
 const { pauseDetection, enableDetection, disableDetection, isDetectionPaused } = require('./detectionController');
@@ -34,7 +34,13 @@ function updateTrayMenu(mainWindow) {
     { label: 'Enable Now', enabled: isDetectionPaused, click: () => enableDetection(mainWindow) },
     { type: 'separator' },
     { label: 'Show App', click: () => mainWindow.show() },
-    { label: 'Quit', click: () => { app.isQuiting = true; app.quit(); } }
+    {
+      label: 'Quit',
+      click: () => {
+        app.isQuiting = true;
+        app.quit();
+      }
+    }
   ]);
 
   tray.setContextMenu(contextMenu);
