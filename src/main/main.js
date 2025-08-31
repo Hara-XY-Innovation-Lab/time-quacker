@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, Notification } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, Notification, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
@@ -10,6 +10,8 @@ let cameraList = [];
 let selectedCameraId = null;
 let isDetectionPaused = false;
 let disableTimeout = null;
+let isMuted = false; // Voice mute state
+let isNotificationMuted = false; // Notification mute state
 
 const splashDir = path.join(__dirname, '..', '..', 'Assets', 'splash');
 let splashShufflePool = [];
@@ -80,6 +82,33 @@ function createMainWindow() {
   });
 }
 
+let settingsWindow = null;
+
+// Function to create settings window
+function createSettingsWindow() {
+  if (settingsWindow) {
+    settingsWindow.show();
+    return;
+  }
+  
+  settingsWindow = new BrowserWindow({
+    width: 600,
+    height: 700,
+    show: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+  
+  settingsWindow.loadFile(path.join(__dirname, '..', 'renderer', 'settings.html'));
+  
+  settingsWindow.on('closed', () => {
+    settingsWindow = null;
+  });
+}
+
 let waterSettingsWindow = null;
 
 // Function to create water settings window
@@ -107,7 +136,7 @@ function createWaterSettingsWindow() {
   });
 }
 
-// Update the updateTrayMenu function
+// Update the updateTrayMenu function to include settings
 function updateTrayMenu() {
   const cameraMenuItems = cameraList.map(cam => ({
     label: cam.label || `Camera (${cam.deviceId.slice(-4)})`,
@@ -150,6 +179,30 @@ function updateTrayMenu() {
       click: enableDetection
     },
     { type: 'separator' },
+    // Mute options
+    {
+      label: isMuted ? 'Unmute Time Quacker' : 'Mute Time Quacker',
+      click: () => {
+        isMuted = !isMuted;
+        if (mainWindow) mainWindow.webContents.send('mute-toggled', isMuted);
+        updateTrayMenu();
+      }
+    },
+    {
+      label: isNotificationMuted ? 'Enable Notifications' : 'Mute Notifications',
+      click: () => {
+        isNotificationMuted = !isNotificationMuted;
+        if (mainWindow) mainWindow.webContents.send('notification-mute-toggled', isNotificationMuted);
+        updateTrayMenu();
+      }
+    },
+    { type: 'separator' },
+    // Settings
+    {
+      label: 'Settings',
+      click: () => createSettingsWindow()
+    },
+    { type: 'separator' },
     // Water Reminder Menu Items
     { label: 'Water Reminder', enabled: false },
     {
@@ -184,7 +237,7 @@ function updateTrayMenu() {
     { label: 'Quit', click: () => { app.isQuiting = true; app.quit(); } }
   ]);
   tray.setContextMenu(contextMenu);
-  tray.setToolTip(isDetectionPaused ? 'Detection Paused' : 'Time Quacker🦆');
+  tray.setToolTip(isDetectionPaused ? 'Detection Paused' : (isMuted ? 'Time Quacker (Muted) 🦆' : 'Time Quacker🦆'));
 }
 
 let waterStatsWindow = null;
@@ -287,6 +340,91 @@ ipcMain.on('camera-list', (event, cams) => {
   selectedCameraId = integrated ? integrated.deviceId : (cameraList[0] && cameraList[0].deviceId);
   updateTrayMenu();
   if (mainWindow) mainWindow.webContents.send('select-camera', selectedCameraId);
+});
+
+// Function to show silent splash notification
+function showSilentSplashNotification(message) {
+  console.log('Attempting to show silent splash notification:', message);
+  console.log('Notification muted status:', isNotificationMuted);
+  
+  // Show splash notification ONLY when notifications are muted
+  if (!isNotificationMuted) {
+    console.log('Notifications are NOT muted, skipping silent splash notification');
+    return;
+  }
+  
+  try {
+    // Create a small window for the notification
+    const notificationWindow = new BrowserWindow({
+      width: 350,
+      height: 80,
+      show: false,
+      frame: false,
+      alwaysOnTop: true,
+      transparent: false,
+      resizable: false,
+      movable: false,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    });
+    
+    console.log('Created notification window');
+    
+    // Position in top-left corner
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { x, y } = primaryDisplay.workArea;
+    notificationWindow.setPosition(x + 20, y + 20);
+    
+    console.log('Set window position to:', x + 20, y + 20);
+    
+    // Load the splash notification HTML file with message as query parameter
+    const notificationPath = path.join(__dirname, '..', 'renderer', 'splash-notification.html');
+    const url = `file://${notificationPath}?message=${encodeURIComponent(message)}`;
+    notificationWindow.loadURL(url);
+    
+    console.log('Loaded splash notification file into window');
+    
+    notificationWindow.once('ready-to-show', () => {
+      console.log('Notification window ready to show');
+      notificationWindow.show();
+    });
+    
+    notificationWindow.once('error', (error) => {
+      console.error('Notification window error:', error);
+    });
+    
+  } catch (error) {
+    console.error('Error creating silent splash notification:', error);
+  }
+}
+
+// IPC handler for showing silent splash notifications
+ipcMain.on('show-silent-notification', (event, message) => {
+  console.log('IPC: show-silent-notification called with message:', message);
+  showSilentSplashNotification(message);
+});
+
+// IPC handlers for mute status
+ipcMain.on('get-mute-status', (event) => {
+  event.returnValue = isMuted;
+});
+
+ipcMain.on('get-notification-mute-status', (event) => {
+  event.returnValue = isNotificationMuted;
+});
+
+ipcMain.on('set-mute-status', (event, muted) => {
+  isMuted = muted;
+  if (mainWindow) mainWindow.webContents.send('mute-toggled', isMuted);
+  updateTrayMenu();
+});
+
+ipcMain.on('set-notification-mute-status', (event, muted) => {
+  isNotificationMuted = muted;
+  if (mainWindow) mainWindow.webContents.send('notification-mute-toggled', isNotificationMuted);
+  updateTrayMenu();
 });
 
 app.whenReady().then(() => {

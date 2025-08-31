@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      margin: 0;
+      padding: 15px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+      text-align: center;
+    }
+    .message {
+      font-size: 14px;
+      word-wrap: break-word;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="message" id="message"></div>
+  <script>
+    // Get message from URL parameters
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get('message') || 'Notification';
+    document.getElementById('message').textContent = message;
+    
+    // Auto-close after 2 seconds
+    setTimeout(() => {
+      try {
+        window.close();
+      } catch (e) {
+        console.error('Error closing window:', e);
+      }
+    }, 2000);
+  </script>
+</body>
+</html>

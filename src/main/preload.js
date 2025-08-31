@@ -19,6 +19,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
       callback(paused);
     });
   },
+  // Mute functionality
+  onMuteToggled: (callback) => {
+    console.log('Setting up mute-toggled listener');
+    ipcRenderer.on('mute-toggled', (event, isMuted) => {
+      console.log('Received mute-toggled event:', isMuted);
+      callback(isMuted);
+    });
+  },
+  onNotificationMuteToggled: (callback) => {
+    console.log('Setting up notification-mute-toggled listener');
+    ipcRenderer.on('notification-mute-toggled', (event, isNotificationMuted) => {
+      console.log('Received notification-mute-toggled event:', isNotificationMuted);
+      callback(isNotificationMuted);
+    });
+  },
+  getMuteStatus: () => ipcRenderer.sendSync('get-mute-status'),
+  getNotificationMuteStatus: () => ipcRenderer.sendSync('get-notification-mute-status'),
+  setMuteStatus: (muted) => ipcRenderer.send('set-mute-status', muted),
+  setNotificationMuteStatus: (muted) => ipcRenderer.send('set-notification-mute-status', muted),
+  showSilentNotification: (message) => ipcRenderer.send('show-silent-notification', message),
   // Water reminder IPC functions
   startWaterReminders: () => ipcRenderer.send('start-water-reminders'),
   stopWaterReminders: () => ipcRenderer.send('stop-water-reminders'),

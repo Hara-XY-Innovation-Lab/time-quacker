@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Time Quacker Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .container {
+      background: rgba(255,255,255,0.93);
+      box-shadow: 0 8px 32px rgba(31,38,135,0.18);
+      border-radius: 20px;
+      padding: 36px;
+      margin-top: 20px;
+      min-width: 500px;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: #2563eb;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .settings-section {
+      background: #f8f9ff;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 15px 0;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2563eb;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+    .setting-label {
+      font-weight: 500;
+      color: #334155;
+    }
+    .setting-description {
+      font-size: 14px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #2563eb;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    button {
+      background: linear-gradient(135deg, #2563eb, #007BFF);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .duck {
+      font-size: 48px;
+      margin: 10px 0;
+      text-align: center;
+    }
+    select, input[type="number"] {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #cbd5e1;
+      background: white;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="duck">🦆</div>
+    <h1>Time Quacker Settings</h1>
+    
+    <!-- Notification Settings -->
+    <div class="settings-section">
+      <div class="section-title">Notification Settings</div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Voice Announcements</div>
+          <div class="setting-description">Enable/disable spoken notifications</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="voice-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">System Notifications</div>
+          <div class="setting-description">Enable/disable desktop notifications</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="system-notification-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Silent Splash Notifications</div>
+          <div class="setting-description">Show subtle notifications in top-left corner</div>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="silent-notification-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <!-- Pomodoro Settings -->
+    <div class="settings-section">
+      <div class="section-title">Pomodoro Settings</div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Work Duration (minutes)</div>
+          <div class="setting-description">Length of work sessions</div>
+        </div>
+        <input type="number" id="work-duration" min="1" max="60" value="25">
+      </div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Break Duration (minutes)</div>
+          <div class="setting-description">Length of break sessions</div>
+        </div>
+        <input type="number" id="break-duration" min="1" max="30" value="5">
+      </div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Face Detection Timeout (seconds)</div>
+          <div class="setting-description">Time before pausing when face is not detected</div>
+        </div>
+        <input type="number" id="face-timeout" min="1" max="30" value="5">
+      </div>
+    </div>
+    
+    <!-- Gesture Settings -->
+    <div class="settings-section">
+      <div class="section-title">Gesture Settings</div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Three Finger Gesture Delay (ms)</div>
+          <div class="setting-description">Delay before recognizing three finger gesture</div>
+        </div>
+        <input type="number" id="three-finger-delay" min="500" max="5000" step="100" value="1200">
+      </div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Thumbs Up Gesture Delay (ms)</div>
+          <div class="setting-description">Delay before recognizing thumbs up gesture</div>
+        </div>
+        <input type="number" id="thumbs-up-delay" min="500" max="5000" step="100" value="1500">
+      </div>
+    </div>
+    
+    <div class="button-container">
+      <button id="save-settings">Save Settings 💾</button>
+      <button id="reset-settings">Reset to Defaults 🔄</button>
+      <button id="close-window">Close 🚪</button>
+    </div>
+  </div>
+
+  <script>
+    // Load current settings when the page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        // Load mute settings
+        const isMuted = window.electronAPI.getMuteStatus();
+        const isNotificationMuted = window.electronAPI.getNotificationMuteStatus();
+        
+        document.getElementById('voice-toggle').checked = !isMuted;
+        document.getElementById('system-notification-toggle').checked = !isNotificationMuted;
+        document.getElementById('silent-notification-toggle').checked = isNotificationMuted;
+        
+        // TODO: Load other settings when implemented
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    });
+    
+    // Save settings when the save button is clicked
+    document.getElementById('save-settings').addEventListener('click', async () => {
+      try {
+        // Get mute settings
+        const voiceEnabled = document.getElementById('voice-toggle').checked;
+        const systemNotificationsEnabled = document.getElementById('system-notification-toggle').checked;
+        const silentNotificationsEnabled = document.getElementById('silent-notification-toggle').checked;
+        
+        // Send settings to main process
+        window.electronAPI.setMuteStatus(!voiceEnabled);
+        window.electronAPI.setNotificationMuteStatus(!systemNotificationsEnabled);
+        
+        // Show confirmation
+        alert('Settings saved successfully!');
+      } catch (error) {
+        console.error('Error saving settings:', error);
+        alert('Error saving settings. Please try again.');
+      }
+    });
+    
+    // Reset settings to defaults
+    document.getElementById('reset-settings').addEventListener('click', () => {
+      if (confirm('Are you sure you want to reset all settings to defaults?')) {
+        // Reset form values to defaults
+        document.getElementById('voice-toggle').checked = true;
+        document.getElementById('system-notification-toggle').checked = true;
+        document.getElementById('silent-notification-toggle').checked = true;
+        document.getElementById('work-duration').value = 25;
+        document.getElementById('break-duration').value = 5;
+        document.getElementById('face-timeout').value = 5;
+        document.getElementById('three-finger-delay').value = 1200;
+        document.getElementById('thumbs-up-delay').value = 1500;
+      }
+    });
+    
+    // Close window when close button is clicked
+    document.getElementById('close-window').addEventListener('click', () => {
+      window.close();
+    });
+  </script>
+</body>
+</html>

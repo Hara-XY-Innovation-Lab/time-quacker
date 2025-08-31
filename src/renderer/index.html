@@ -59,9 +59,38 @@
       font-size: 48px;
       margin: 0;
     }
+    #mute-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #ff6b6b;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 1000;
+    }
+    #notification-mute-indicator {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #4a90e2;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-weight: bold;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 1000;
+    }
   </style>
 </head>
 <body>
+  <div id="mute-indicator">MUTED 🔇</div>
+  <div id="notification-mute-indicator">NOTIFICATIONS MUTED 🔕</div>
+  
   <div class="container">
     <div class="duck">🦆</div>
     <div id="status">Waiting for face detection...</div>
@@ -101,6 +130,13 @@
     console.log('Window object:', typeof window);
     console.log('Navigator object:', typeof navigator);
     console.log('Document object:', typeof document);
+    
+    // Request notification permissions
+    if (Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        console.log('Notification permission:', permission);
+      });
+    }
     
     // Add debugging for DOM events
     document.addEventListener('DOMContentLoaded', function() {

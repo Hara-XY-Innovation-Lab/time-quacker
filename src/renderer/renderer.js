@@ -16,6 +16,10 @@ let lastTrigger = 0;
 let isSpeaking = false;
 const synth = window.speechSynthesis;
 
+// Mute states
+let isMuted = false;
+let isNotificationMuted = false;
+
 let thumbsUpStartTime = null;
 let threeFingersStart = null;
 const threeFingersDebounce = 1200; // ms
@@ -23,29 +27,32 @@ const threeFingersDebounce = 1200; // ms
 const WEATHER_API_KEY = '743cda0db886183f205f62623cac8604';
 const LOCATION_API_URL = 'https://ipapi.co/json/';
 
-// Pomodoro Logic (unchanged)
+// Pomodoro Logic (updated to handle mute)
 function startPomodoro() {
   if (!isRunning) {
     isRunning = true;
     updatePomodoro();
     pomodoroTimer = setInterval(updatePomodoro, 1000);
-    speak('Pomodoro started. Stay focused!');
+    notifyOrSpeak('Pomodoro started. Stay focused!');
   }
 }
+
 function pausePomodoro() {
   if (isRunning) {
     clearInterval(pomodoroTimer);
     isRunning = false;
-    speak('Pomodoro paused.');
+    notifyOrSpeak('Pomodoro paused.');
   }
 }
+
 function resumePomodoro() {
   if (!isRunning) {
     pomodoroTimer = setInterval(updatePomodoro, 1000);
     isRunning = true;
-    speak('Resuming Pomodoro.');
+    notifyOrSpeak('Resuming Pomodoro.');
   }
 }
+
 function updatePomodoro() {
   if (timeLeft > 0) {
     timeLeft--;
@@ -56,16 +63,46 @@ function updatePomodoro() {
     isWorkSession = !isWorkSession;
     timeLeft = isWorkSession ? 25 * 60 : 5 * 60;
     updateTimerUI();
-    speak(isWorkSession ? 'Break over. Back to work!' : 'Pomodoro complete. Time for a break!');
+    notifyOrSpeak(isWorkSession ? 'Break over. Back to work!' : 'Pomodoro complete. Time for a break!');
     startPomodoro(); // auto-start next session
   }
 }
+
 function updateTimerUI() {
   const mins = String(Math.floor(timeLeft / 60)).padStart(2, '0');
   const secs = String(timeLeft % 60).padStart(2, '0');
   timeEl.textContent = `${mins}:${secs}`;
   timeEl.classList.remove('hidden');
 }
+
+// Function to either speak or show notification based on mute status
+function notifyOrSpeak(text) {
+  console.log('notifyOrSpeak called with text:', text);
+  console.log('isNotificationMuted:', isNotificationMuted);
+  console.log('isMuted:', isMuted);
+  
+  // Show silent splash notification ONLY when notifications are muted
+  if (isNotificationMuted) {
+    console.log('Notifications are muted, showing silent splash notification');
+    window.electronAPI.showSilentNotification(text);
+  }
+  
+  // Show system notification only when notifications are NOT muted
+  if (!isNotificationMuted) {
+    console.log('Notifications are NOT muted, showing system notification');
+    new Notification('Time Quacker', {
+      body: text,
+      icon: '../Assets/tray-icon.png'
+    });
+  }
+  
+  // Only speak if not muted
+  if (!isMuted) {
+    console.log('Voice is NOT muted, speaking text');
+    speak(text);
+  }
+}
+
 function speak(text) {
   if (!isSpeaking) {
     const utter = new SpeechSynthesisUtterance(text);
@@ -79,12 +116,52 @@ function speak(text) {
 window.electronAPI.onSelectCamera((deviceId) => {
   if (deviceId) startCamera(deviceId);
 });
+
 window.electronAPI.onPauseDetection((paused) => {
   detectionPaused = paused;
   statusEl.textContent = paused ? 'Detection paused.' : 'Detection resumed.';
 });
 
+// Handle mute toggle
+window.electronAPI.onMuteToggled((muted) => {
+  isMuted = muted;
+  statusEl.textContent = muted ? 'Time Quacker is now muted.' : 'Time Quacker is now unmuted.';
+  
+  // Show/hide mute indicator
+  const muteIndicator = document.getElementById('mute-indicator');
+  if (muteIndicator) {
+    muteIndicator.style.display = muted ? 'block' : 'none';
+  }
+});
+
+// Handle notification mute toggle
+window.electronAPI.onNotificationMuteToggled((muted) => {
+  isNotificationMuted = muted;
+  statusEl.textContent = muted ? 'Notifications are now muted.' : 'Notifications are now enabled.';
+  
+  // Show/hide notification mute indicator
+  const notificationMuteIndicator = document.getElementById('notification-mute-indicator');
+  if (notificationMuteIndicator) {
+    notificationMuteIndicator.style.display = muted ? 'block' : 'none';
+  }
+});
+
+// Get initial mute status
+isMuted = window.electronAPI.getMuteStatus();
+isNotificationMuted = window.electronAPI.getNotificationMuteStatus();
+
+// Show mute indicators on load if muted
 document.addEventListener('DOMContentLoaded', async () => {
+  const muteIndicator = document.getElementById('mute-indicator');
+  if (muteIndicator) {
+    muteIndicator.style.display = isMuted ? 'block' : 'none';
+  }
+  
+  const notificationMuteIndicator = document.getElementById('notification-mute-indicator');
+  if (notificationMuteIndicator) {
+    notificationMuteIndicator.style.display = isNotificationMuted ? 'block' : 'none';
+  }
+  
   console.log('DOMContentLoaded event fired in simplified renderer');
   try {
     const devices = await navigator.mediaDevices.enumerateDevices();
@@ -177,6 +254,7 @@ function countExtendedFingers(landmarks) {
     landmarks[tip].y < landmarks[base].y ? count + 1 : count
   ), 0);
 }
+
 function isThumbsUp(landmarks) {
   const thumbTip = landmarks[4];
   const thumbKnuckle = landmarks[2];
@@ -192,6 +270,7 @@ function isThumbsUp(landmarks) {
   const isMostlyUp = angle < -45 && angle > -135;
   return thumbExtended && fingersCurled && isMostlyUp;
 }
+
 function onHandResults(results) {
   if (detectionPaused) return;
   if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
@@ -237,12 +316,14 @@ async function getLocationByIP() {
   if (!res.ok) throw new Error('IP location failed');
   return res.json();
 }
+
 async function fetchWeather(lat, lon) {
   const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${WEATHER_API_KEY}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error('Weather fetch failed');
   return res.json();
 }
+
 async function showWeatherAndTime() {
   statusEl.textContent = 'Getting weather...';
   try {
@@ -258,17 +339,36 @@ async function showWeatherAndTime() {
     statusEl.textContent = info;
     timeEl.textContent = info;
     timeEl.classList.remove('hidden');
-    if (!isSpeaking) {
+    
+    // Show silent notification for weather ONLY when notifications are muted
+    if (isNotificationMuted) {
+      console.log('Notifications are muted, showing weather silent notification');
+      window.electronAPI.showSilentNotification(`Weather: ${temp}°C, ${desc}`);
+    }
+    
+    // Show system notification for weather ONLY when notifications are NOT muted
+    if (!isNotificationMuted) {
+      console.log('Notifications are NOT muted, showing weather system notification');
+      new Notification('Weather & Time', {
+        body: `📍 ${city}: ${temp}°C, ${desc}\n🕒 ${timeStr}`,
+        icon: '../Assets/tray-icon.png'
+      });
+    }
+    
+    // Only speak if not muted
+    if (!isMuted && !isSpeaking) {
       const utter = new SpeechSynthesisUtterance(`In ${city}, it's ${temp} degrees and ${desc}. The time is ${timeStr}.`);
       utter.onstart = () => { isSpeaking = true; };
       utter.onend = () => { isSpeaking = false; };
       synth.speak(utter);
     }
+    
     setTimeout(() => { timeEl.classList.add('hidden'); }, 7000);
   } catch (err) {
     statusEl.textContent = 'Weather failed: ' + err.message;
   }
 }
+
 function updateTime() {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
@@ -276,7 +376,24 @@ function updateTime() {
   timeEl.classList.remove('hidden');
   let greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 18 ? 'Good afternoon' : 'Good evening';
   setTimeout(() => { timeEl.classList.add('hidden'); }, 5000);
-  if (!isSpeaking && Date.now() - lastTrigger > 5000) {
+  
+  // Show silent notification for time ONLY when notifications are muted
+  if (isNotificationMuted) {
+    console.log('Notifications are muted, showing time silent notification');
+    window.electronAPI.showSilentNotification(`${greeting}. The time is ${timeStr}`);
+  }
+  
+  // Show system notification for time ONLY when notifications are NOT muted
+  if (!isNotificationMuted) {
+    console.log('Notifications are NOT muted, showing time system notification');
+    new Notification('Current Time', {
+      body: `${greeting}. The time is ${timeStr}`,
+      icon: '../Assets/tray-icon.png'
+    });
+  }
+  
+  // Only speak if not muted
+  if (!isMuted && !isSpeaking && Date.now() - lastTrigger > 5000) {
     const utter = new SpeechSynthesisUtterance(`${greeting}. The time is ${timeStr}`);
     utter.onstart = () => { isSpeaking = true; };
     utter.onend = () => {
@@ -300,5 +417,11 @@ window.pomodoro = {
     timeLeft = 25 * 60;
     updateTimerUI();
     statusEl.textContent = "Pomodoro reset.";
+    
+    // Show silent notification for reset ONLY when notifications are muted
+    if (isNotificationMuted) {
+      console.log('Notifications are muted, showing reset silent notification');
+      window.electronAPI.showSilentNotification("Pomodoro reset.");
+    }
   }
 };
