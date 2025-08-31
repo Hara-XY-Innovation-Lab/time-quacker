@@ -144,6 +144,16 @@
       background: white;
       font-size: 16px;
     }
+    .location-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .location-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
   </style>
 </head>
 <body>
@@ -186,6 +196,35 @@
           <input type="checkbox" id="silent-notification-toggle" checked>
           <span class="slider"></span>
         </label>
+      </div>
+      
+      <div class="setting-item">
+        <div>
+          <div class="setting-label">Silent Notification Location</div>
+          <div class="setting-description">Where to show silent notifications</div>
+        </div>
+        <div class="location-selector">
+          <div class="location-option">
+            <input type="radio" id="top-left" name="notification-location" value="top-left" checked>
+            <label for="top-left">Top Left Corner</label>
+          </div>
+          <div class="location-option">
+            <input type="radio" id="top-right" name="notification-location" value="top-right">
+            <label for="top-right">Top Right Corner</label>
+          </div>
+          <div class="location-option">
+            <input type="radio" id="bottom-left" name="notification-location" value="bottom-left">
+            <label for="bottom-left">Bottom Left Corner</label>
+          </div>
+          <div class="location-option">
+            <input type="radio" id="bottom-right" name="notification-location" value="bottom-right">
+            <label for="bottom-right">Bottom Right Corner</label>
+          </div>
+          <div class="location-option">
+            <input type="radio" id="center" name="notification-location" value="center">
+            <label for="center">Center Screen</label>
+          </div>
+        </div>
       </div>
     </div>
     
@@ -271,10 +310,12 @@
         const voiceEnabled = document.getElementById('voice-toggle').checked;
         const systemNotificationsEnabled = document.getElementById('system-notification-toggle').checked;
         const silentNotificationsEnabled = document.getElementById('silent-notification-toggle').checked;
+        const notificationLocation = document.querySelector('input[name="notification-location"]:checked').value;
         
         // Send settings to main process
         window.electronAPI.setMuteStatus(!voiceEnabled);
         window.electronAPI.setNotificationMuteStatus(!systemNotificationsEnabled);
+        window.electronAPI.setNotificationPosition(notificationLocation);
         
         // Show confirmation
         alert('Settings saved successfully!');
@@ -291,6 +332,7 @@
         document.getElementById('voice-toggle').checked = true;
         document.getElementById('system-notification-toggle').checked = true;
         document.getElementById('silent-notification-toggle').checked = true;
+        document.getElementById('top-left').checked = true;
         document.getElementById('work-duration').value = 25;
         document.getElementById('break-duration').value = 5;
         document.getElementById('face-timeout').value = 5;

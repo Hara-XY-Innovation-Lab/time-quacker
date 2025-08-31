@@ -38,6 +38,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getNotificationMuteStatus: () => ipcRenderer.sendSync('get-notification-mute-status'),
   setMuteStatus: (muted) => ipcRenderer.send('set-mute-status', muted),
   setNotificationMuteStatus: (muted) => ipcRenderer.send('set-notification-mute-status', muted),
+  setNotificationPosition: (position) => ipcRenderer.send('set-notification-position', position),
   showSilentNotification: (message) => ipcRenderer.send('show-silent-notification', message),
   // Water reminder IPC functions
   startWaterReminders: () => ipcRenderer.send('start-water-reminders'),

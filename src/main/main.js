@@ -342,10 +342,14 @@ ipcMain.on('camera-list', (event, cams) => {
   if (mainWindow) mainWindow.webContents.send('select-camera', selectedCameraId);
 });
 
+// Add notification position variable
+let notificationPosition = 'top-left'; // Default position
+
 // Function to show silent splash notification
 function showSilentSplashNotification(message) {
   console.log('Attempting to show silent splash notification:', message);
   console.log('Notification muted status:', isNotificationMuted);
+  console.log('Notification position:', notificationPosition);
   
   // Show splash notification ONLY when notifications are muted
   if (!isNotificationMuted) {
@@ -372,12 +376,38 @@ function showSilentSplashNotification(message) {
     
     console.log('Created notification window');
     
-    // Position in top-left corner
+    // Position based on setting
     const primaryDisplay = screen.getPrimaryDisplay();
-    const { x, y } = primaryDisplay.workArea;
-    notificationWindow.setPosition(x + 20, y + 20);
+    const { x, y, width, height } = primaryDisplay.workArea;
+    let windowX, windowY;
     
-    console.log('Set window position to:', x + 20, y + 20);
+    switch (notificationPosition) {
+      case 'top-right':
+        windowX = x + width - 370; // 350px width + 20px margin
+        windowY = y + 20;
+        break;
+      case 'bottom-left':
+        windowX = x + 20;
+        windowY = y + height - 100; // 80px height + 20px margin
+        break;
+      case 'bottom-right':
+        windowX = x + width - 370; // 350px width + 20px margin
+        windowY = y + height - 100; // 80px height + 20px margin
+        break;
+      case 'center':
+        windowX = x + (width / 2) - 175; // Center horizontally
+        windowY = y + (height / 2) - 40; // Center vertically
+        break;
+      case 'top-left':
+      default:
+        windowX = x + 20;
+        windowY = y + 20;
+        break;
+    }
+    
+    notificationWindow.setPosition(windowX, windowY);
+    
+    console.log('Set window position to:', windowX, windowY);
     
     // Load the splash notification HTML file with message as query parameter
     const notificationPath = path.join(__dirname, '..', 'renderer', 'splash-notification.html');
@@ -425,6 +455,12 @@ ipcMain.on('set-notification-mute-status', (event, muted) => {
   isNotificationMuted = muted;
   if (mainWindow) mainWindow.webContents.send('notification-mute-toggled', isNotificationMuted);
   updateTrayMenu();
+});
+
+// IPC handler for setting notification position
+ipcMain.on('set-notification-position', (event, position) => {
+  notificationPosition = position;
+  console.log('Notification position set to:', position);
 });
 
 app.whenReady().then(() => {
