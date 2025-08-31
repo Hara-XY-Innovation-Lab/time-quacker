@@ -1,9 +1,11 @@
 {
   "name": "time-quacker",
   "version": "1.0.0",
-  "main": "main.js",
+  "main": "src/main/main.js",
   "scripts": {
+    "postinstall": "electron-builder install-app-deps",
     "start": "electron .",
+    "dev": "electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
@@ -13,12 +15,10 @@
       "target": "nsis"
     },
     "files": [
-        "main.js",
-        "preload.js",
-        "renderer/**/*",
-        "Assets/**/*"
-      ]
-
+      "src/main/**/*",
+      "src/renderer/**/*",
+      "Assets/**/*"
+    ]
   },
   "keywords": [
     "gesture",
@@ -30,6 +30,10 @@
   "author": "Shiv Patil",
   "license": "ISC",
   "description": "A desktop app that uses hand gestures to announce the time and automate actions.",
+  "dependencies": {
+    "@mediapipe/face_detection": "0.4.1646425229",
+    "@mediapipe/hands": "0.4.1646425229"
+  },
   "devDependencies": {
     "electron": "36.5.0",
     "electron-builder": "26.0.17"
