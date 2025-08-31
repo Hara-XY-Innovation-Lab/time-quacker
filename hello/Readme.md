@@ -53,50 +53,11 @@ The Windows installer will be generated using NSIS.
 
 ## Project Structure
 
-```
-src/
-├── main/
-│   ├── cameraManager.js
-│   ├── detectionController.js
-│   ├── main.js
-│   ├── preload.js
-│   ├── splashImageManager.js
-│   ├── tray.js
-│   └── windows.js
-├── renderer/
-│   ├── components/
-│   │   ├── Button.js
-│   │   ├── CameraSelector.js
-│   │   └── TimerDisplay.js
-│   ├── features/
-│   │   ├── pomodoro/
-│   │   │   ├── pomodoro.js
-│   │   │   ├── state.js
-│   │   │   ├── timer.js
-│   │   │   ├── time.js
-│   │   │   └── speech.js
-│   │   ├── gestures/
-│   │   └── weather/
-│   │       └── weather.js
-│   ├── renderer.js
-│   ├── index.html
-│   ├── splash.html
-│   └── services/
-│       └── gestureService.js
-├── shared/
-│   ├── config.js
-│   ├── eventSystem.js
-│   ├── logger.js
-│   ├── stateManager.js
-│   └── appState.js
-└── Assets/
-```
-
 | File/Folder   | Purpose                                      |
 |---------------|----------------------------------------------|
-| `src/main/`   | Main Electron process files                  |
-| `src/renderer/` | Frontend UI and gesture recognition logic  |
-| `src/shared/` | Shared utilities and configuration           |
+| `main.js`     | Main Electron process                        |
+| `preload.js`  | Preload script for secure context bridging   |
+| `renderer/`   | Frontend UI and gesture recognition logic    |
 | `Assets/`     | Images, sounds, and other static resources   |
 
 > **Important:**  
@@ -119,8 +80,9 @@ The app is configured for Windows with the following Electron Builder settings:
   "appId": "om.namah.gestureautomation",
   "win": { "target": "nsis" },
   "files": [
-    "src/main/**/*",
-    "src/renderer/**/*",
+    "main.js",
+    "preload.js",
+    "renderer/**/*",
     "Assets/**/*"
   ]
 }

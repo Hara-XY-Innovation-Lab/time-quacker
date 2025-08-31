@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Time Quacker 🦆</title>
+  <meta name="viewport" content="width=700, initial-scale=1">
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0e7ff 0%, #f0fdfa 100%);
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .container {
+      background: rgba(255,255,255,0.93);
+      box-shadow: 0 8px 32px rgba(31,38,135,0.18);
+      border-radius: 20px;
+      padding: 36px;
+      margin-top: 48px;
+      min-width: 420px;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #webcam {
+      background: #e0e7ff;
+      border-radius: 14px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.11);
+      margin: 0 auto 24px auto;
+      display: block;
+      width: 600px;
+      max-width: 95vw;
+      height: 450px;
+      object-fit: cover;
+    }
+    #status {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #333;
+      letter-spacing: 0.5px;
+      min-height: 28px;
+      font-weight: 500;
+    }
+    #time {
+      font-size: 44px;
+      font-weight: bold;
+      color: #2563eb;
+      margin-bottom: 10px;
+      letter-spacing: 1.5px;
+    }
+    .hidden { display: none; }
+    .duck {
+      font-size: 48px;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="duck">🦆</div>
+    <div id="status">Waiting for face detection...</div>
+    <div id="time" class="hidden"></div>
+    <video id="webcam" width="600" height="450" autoplay playsinline></video>
+
+    <div style="margin-top: 16px;">
+      <!-- Pomodoro is now always face-triggered, so removed hand/face toggle! -->
+      <label><input type="checkbox" id="reminderToggle" checked> Enable Reminders</label><br><br>
+      <button onclick="pomodoro.start()">Start</button>
+      <button onclick="pomodoro.pause()">Pause</button>
+      <button onclick="pomodoro.resume()">Resume</button>
+      <button onclick="pomodoro.reset()">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    // Add global error handling
+    window.addEventListener('error', function(e) {
+      console.error('Global error:', e.error);
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = 'Error: ' + e.error.message;
+      }
+    });
+    
+    window.addEventListener('unhandledrejection', function(e) {
+      console.error('Unhandled promise rejection:', e.reason);
+      const statusEl = document.getElementById('status');
+      if (statusEl) {
+        statusEl.textContent = 'Error: ' + e.reason.message;
+      }
+    });
+    
+    // Add debugging for page load
+    console.log('Index.html loaded');
+    console.log('Window object:', typeof window);
+    console.log('Navigator object:', typeof navigator);
+    console.log('Document object:', typeof document);
+    
+    // Add debugging for DOM events
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('!!! HTML DOMContentLoaded event fired !!!');
+    });
+    
+    window.addEventListener('load', function() {
+      console.log('!!! HTML window load event fired !!!');
+    });
+    
+    // Add a simple test for camera API
+    setTimeout(() => {
+      console.log('Testing camera API availability...');
+      if (navigator.mediaDevices) {
+        console.log('mediaDevices available');
+        if (navigator.mediaDevices.enumerateDevices) {
+          console.log('enumerateDevices available');
+          navigator.mediaDevices.enumerateDevices()
+            .then(devices => {
+              console.log('enumerateDevices result:', devices);
+              const videoDevices = devices.filter(d => d.kind === 'videoinput');
+              console.log('Video devices:', videoDevices);
+            })
+            .catch(error => {
+              console.error('enumerateDevices error:', error);
+            });
+        } else {
+          console.log('enumerateDevices NOT available');
+        }
+      } else {
+        console.log('mediaDevices NOT available');
+      }
+    }, 2000);
+    
+    // Add another test after a longer delay
+    setTimeout(() => {
+      console.log('Testing camera API again after longer delay...');
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices.enumerateDevices()
+          .then(devices => {
+            console.log('Second enumerateDevices result:', devices);
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            console.log('Second Video devices:', videoDevices);
+          })
+          .catch(error => {
+            console.error('Second enumerateDevices error:', error);
+          });
+      }
+    }, 5000);
+  </script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js"></script>
+  
+  <!-- Add a simple test script to see if scripts are loading -->
+  <script>
+    console.log('Test script loaded before renderer.js');
+  </script>
+  
+  <script type="module" src="./renderer.js"></script>
+  
+  <!-- Add a simple test script to see if scripts are loading -->
+  <script>
+    console.log('Test script loaded after renderer.js');
+  </script>
+</body>
+</html>

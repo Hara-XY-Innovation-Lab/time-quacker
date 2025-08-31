@@ -1,6 +1,7 @@
 import { Hands } from '@mediapipe/hands';
-import { updateTime } from './time.js';
-import { showWeather } from './weather.js';
+import { updateTime } from '../pomodoro/time.js';
+import { showWeather } from '../weather/weather.js';
+import { AppConfig } from '../../../shared/config.js';
 
 let thumbsUpStart = null;
 let threeFingersStart = null;
@@ -28,7 +29,7 @@ export function setupHandGestures(statusEl, timeEl) {
     const count = countFingers(landmarks);
     if (count === 3) {
       if (!threeFingersStart) threeFingersStart = Date.now();
-      else if (Date.now() - threeFingersStart >= 1200) {
+      else if (Date.now() - threeFingersStart >= AppConfig.detection.gesture.threeFingersHoldDuration) {
         showWeather(statusEl, timeEl);
         threeFingersStart = null;
       }
@@ -38,7 +39,7 @@ export function setupHandGestures(statusEl, timeEl) {
 
     if (isThumbsUp(landmarks)) {
       if (!thumbsUpStart) thumbsUpStart = Date.now();
-      else if (Date.now() - thumbsUpStart >= 1500) {
+      else if (Date.now() - thumbsUpStart >= AppConfig.detection.gesture.thumbsUpHoldDuration) {
         updateTime(statusEl, timeEl);
         thumbsUpStart = null;
       }

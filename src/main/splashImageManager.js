@@ -1,13 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
-const splashDir = path.join(__dirname, 'Assets', 'splash');
+const splashDir = path.join(__dirname, '..', '..', 'Assets', 'splash');
 let splashShufflePool = [];
 
 function getSplashImages() {
-  return fs.existsSync(splashDir)
-    ? fs.readdirSync(splashDir).filter(f => /\.(png|jpe?g|gif|bmp|webp)$/i.test(f))
-    : [];
+  if (fs.existsSync(splashDir)) {
+    const files = fs.readdirSync(splashDir);
+    return files.filter(f => /\.(png|jpe?g|gif|bmp|webp)$/i.test(f));
+  }
+  return [];
 }
 
 function getRandomSplashImage() {
