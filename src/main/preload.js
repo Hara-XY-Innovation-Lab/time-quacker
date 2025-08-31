@@ -19,4 +19,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
       callback(paused);
     });
   },
+  // Water reminder IPC functions
+  startWaterReminders: () => ipcRenderer.send('start-water-reminders'),
+  stopWaterReminders: () => ipcRenderer.send('stop-water-reminders'),
+  logWaterIntake: (amount) => ipcRenderer.send('log-water-intake', amount),
+  getWaterStats: () => ipcRenderer.invoke('get-water-stats'),
+  setWaterGoal: (goal) => ipcRenderer.send('set-water-goal', goal),
+  setReminderInterval: (interval) => ipcRenderer.send('set-reminder-interval', interval)
 });

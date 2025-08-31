@@ -1,6 +1,9 @@
-const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage } = require('electron');
+const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
+
+// Import water reminder service
+const waterReminderService = require('./services/waterReminderService');
 
 let mainWindow, splashWindow, tray;
 let cameraList = [];
@@ -77,6 +80,34 @@ function createMainWindow() {
   });
 }
 
+let waterSettingsWindow = null;
+
+// Function to create water settings window
+function createWaterSettingsWindow() {
+  if (waterSettingsWindow) {
+    waterSettingsWindow.show();
+    return;
+  }
+  
+  waterSettingsWindow = new BrowserWindow({
+    width: 500,
+    height: 400,
+    show: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+  
+  waterSettingsWindow.loadFile(path.join(__dirname, '..', 'renderer', 'water-settings.html'));
+  
+  waterSettingsWindow.on('closed', () => {
+    waterSettingsWindow = null;
+  });
+}
+
+// Update the updateTrayMenu function
 function updateTrayMenu() {
   const cameraMenuItems = cameraList.map(cam => ({
     label: cam.label || `Camera (${cam.deviceId.slice(-4)})`,
@@ -119,11 +150,73 @@ function updateTrayMenu() {
       click: enableDetection
     },
     { type: 'separator' },
+    // Water Reminder Menu Items
+    { label: 'Water Reminder', enabled: false },
+    {
+      label: waterReminderService.getSettings().isReminderActive ? 'Stop Water Reminders' : 'Start Water Reminders',
+      click: () => {
+        if (waterReminderService.getSettings().isReminderActive) {
+          waterReminderService.stopReminders();
+        } else {
+          waterReminderService.startReminders();
+        }
+        updateTrayMenu();
+      }
+    },
+    {
+      label: 'Log Water Intake (250ml)',
+      click: () => waterReminderService.logWaterIntake()
+    },
+    {
+      label: 'Log Water Intake (500ml)',
+      click: () => waterReminderService.logWaterIntake(500)
+    },
+    {
+      label: 'Show Water Stats',
+      click: () => createWaterStatsWindow()
+    },
+    {
+      label: 'Water Settings',
+      click: () => createWaterSettingsWindow()
+    },
+    { type: 'separator' },
     { label: 'Show App', click: () => mainWindow && mainWindow.show() },
     { label: 'Quit', click: () => { app.isQuiting = true; app.quit(); } }
   ]);
   tray.setContextMenu(contextMenu);
   tray.setToolTip(isDetectionPaused ? 'Detection Paused' : 'Time Quacker🦆');
+}
+
+let waterStatsWindow = null;
+
+// Function to create water statistics window
+function createWaterStatsWindow() {
+  if (waterStatsWindow) {
+    waterStatsWindow.show();
+    return;
+  }
+  
+  waterStatsWindow = new BrowserWindow({
+    width: 600,
+    height: 400,
+    show: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  });
+  
+  waterStatsWindow.loadFile(path.join(__dirname, '..', 'renderer', 'water-stats.html'));
+  
+  waterStatsWindow.on('closed', () => {
+    waterStatsWindow = null;
+  });
+}
+
+// Update the showWaterStats function
+function showWaterStats() {
+  createWaterStatsWindow();
 }
 
 function createTray() {
@@ -155,6 +248,38 @@ function enableDetection() {
   if (disableTimeout) clearTimeout(disableTimeout);
 }
 
+// IPC handlers for water reminder
+ipcMain.on('start-water-reminders', () => {
+  waterReminderService.startReminders();
+  updateTrayMenu();
+});
+
+ipcMain.on('stop-water-reminders', () => {
+  waterReminderService.stopReminders();
+  updateTrayMenu();
+});
+
+ipcMain.on('log-water-intake', (event, amount) => {
+  waterReminderService.logWaterIntake(amount);
+  updateTrayMenu();
+});
+
+ipcMain.handle('get-water-stats', () => {
+  return {
+    today: waterReminderService.getTodaysStats(),
+    weekly: waterReminderService.getWeeklyStats(),
+    settings: waterReminderService.getSettings()
+  };
+});
+
+ipcMain.on('set-water-goal', (event, goal) => {
+  waterReminderService.setDailyGoal(goal);
+});
+
+ipcMain.on('set-reminder-interval', (event, interval) => {
+  waterReminderService.setReminderInterval(interval);
+});
+
 ipcMain.on('camera-list', (event, cams) => {
   console.log('Received camera list from renderer:', cams);
   cameraList = cams;
@@ -170,6 +295,9 @@ app.whenReady().then(() => {
     if (splashWindow) { splashWindow.close(); splashWindow = null; }
     createMainWindow();
     createTray();
+    
+    // Start water reminders by default
+    waterReminderService.startReminders();
   }, 2500);
 });
 

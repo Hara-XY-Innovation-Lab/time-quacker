@@ -31,8 +31,9 @@
   "license": "ISC",
   "description": "A desktop app that uses hand gestures to announce the time and automate actions.",
   "dependencies": {
-    "@mediapipe/face_detection": "0.4.1646425229",
-    "@mediapipe/hands": "0.4.1646425229"
+    "@mediapipe/face_detection": "^0.4.0",
+    "@mediapipe/hands": "^0.4.0",
+    "electron-store": "^8.2.0"
   },
   "devDependencies": {
     "electron": "36.5.0",

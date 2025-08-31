@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Water Intake Statistics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0f7fa 0%, #f8f8f8 100%);
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .container {
+      background: rgba(255,255,255,0.93);
+      box-shadow: 0 8px 32px rgba(31,38,135,0.18);
+      border-radius: 20px;
+      padding: 36px;
+      margin-top: 20px;
+      min-width: 420px;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: #007BFF;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .stats-card {
+      background: #e1f5fe;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 15px 0;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .stats-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #01579b;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .stats-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #b3e5fc;
+    }
+    .stats-item:last-child {
+      border-bottom: none;
+    }
+    .stats-label {
+      font-weight: 500;
+      color: #0288d1;
+    }
+    .stats-value {
+      font-weight: bold;
+      color: #01579b;
+    }
+    .progress-container {
+      width: 100%;
+      background-color: #b3e5fc;
+      border-radius: 10px;
+      margin: 15px 0;
+      height: 24px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #00bcd4, #007BFF);
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+    .progress-text {
+      text-align: center;
+      font-weight: bold;
+      color: #01579b;
+      margin-top: 5px;
+    }
+    .water-icon {
+      font-size: 48px;
+      margin: 10px 0;
+      text-align: center;
+    }
+    button {
+      background: linear-gradient(135deg, #007BFF, #00bcd4);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,123,255,0.4);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .loading {
+      text-align: center;
+      color: #0288d1;
+      font-style: italic;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="water-icon">💧</div>
+    <h1>Water Intake Statistics</h1>
+    
+    <div id="loading" class="loading">Loading statistics...</div>
+    
+    <div id="stats-content" style="display: none; width: 100%;">
+      <div class="stats-card">
+        <div class="stats-title">Today's Intake</div>
+        <div class="progress-container">
+          <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+        </div>
+        <div id="progress-text" class="progress-text">0%</div>
+        
+        <div class="stats-item">
+          <span class="stats-label">Total Intake:</span>
+          <span id="total-intake" class="stats-value">0 ml</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-label">Daily Goal:</span>
+          <span id="daily-goal" class="stats-value">0 ml</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-label">Intake Events:</span>
+          <span id="intake-events" class="stats-value">0</span>
+        </div>
+      </div>
+      
+      <div class="stats-card">
+        <div class="stats-title">Weekly Summary</div>
+        <div class="stats-item">
+          <span class="stats-label">Weekly Average:</span>
+          <span id="weekly-average" class="stats-value">0 ml/day</span>
+        </div>
+      </div>
+      
+      <div class="button-container">
+        <button id="log-250ml">Log 250ml 🥛</button>
+        <button id="log-500ml">Log 500ml 🍶</button>
+        <button id="refresh-stats">Refresh Stats 🔄</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Function to update statistics display
+    async function updateStats() {
+      try {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('stats-content').style.display = 'none';
+        
+        const stats = await window.electronAPI.getWaterStats();
+        
+        document.getElementById('total-intake').textContent = stats.today.totalIntake + ' ml';
+        document.getElementById('daily-goal').textContent = stats.today.dailyGoal + ' ml';
+        document.getElementById('intake-events').textContent = stats.today.intakeEvents;
+        document.getElementById('weekly-average').textContent = Math.round(stats.weekly.weeklyAverage) + ' ml/day';
+        
+        // Update progress bar
+        const progress = Math.min(100, stats.today.progress);
+        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById('progress-text').textContent = Math.round(progress) + '%';
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('stats-content').style.display = 'block';
+      } catch (error) {
+        console.error('Error fetching water stats:', error);
+        document.getElementById('loading').textContent = 'Error loading statistics';
+      }
+    }
+    
+    // Add event listeners to buttons
+    document.getElementById('log-250ml').addEventListener('click', () => {
+      window.electronAPI.logWaterIntake(250);
+      // Give a moment for the data to be saved before refreshing
+      setTimeout(updateStats, 500);
+    });
+    
+    document.getElementById('log-500ml').addEventListener('click', () => {
+      window.electronAPI.logWaterIntake(500);
+      // Give a moment for the data to be saved before refreshing
+      setTimeout(updateStats, 500);
+    });
+    
+    document.getElementById('refresh-stats').addEventListener('click', updateStats);
+    
+    // Initialize stats on load
+    document.addEventListener('DOMContentLoaded', updateStats);
+  </script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Water Reminder Settings</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0f7fa 0%, #f8f8f8 100%);
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    .container {
+      background: rgba(255,255,255,0.93);
+      box-shadow: 0 8px 32px rgba(31,38,135,0.18);
+      border-radius: 20px;
+      padding: 36px;
+      margin-top: 20px;
+      min-width: 420px;
+      max-width: 700px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      color: #007BFF;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .settings-card {
+      background: #e1f5fe;
+      border-radius: 15px;
+      padding: 20px;
+      margin: 15px 0;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .settings-title {
+      font-size: 20px;
+      font-weight: bold;
+      color: #01579b;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid #b3e5fc;
+    }
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+    .setting-label {
+      font-weight: 500;
+      color: #0288d1;
+    }
+    input, select {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid #b3e5fc;
+      background: white;
+      font-size: 16px;
+    }
+    button {
+      background: linear-gradient(135deg, #007BFF, #00bcd4);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      margin: 10px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0,123,255,0.4);
+    }
+    button:active {
+      transform: translateY(0);
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .water-icon {
+      font-size: 48px;
+      margin: 10px 0;
+      text-align: center;
+    }
+    /* Switch toggle styles */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 34px;
+    }
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 34px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 26px;
+      width: 26px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #007BFF;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="water-icon">💧</div>
+    <h1>Water Reminder Settings</h1>
+    
+    <div class="settings-card">
+      <div class="settings-title">Reminder Settings</div>
+      
+      <div class="setting-item">
+        <span class="setting-label">Daily Water Goal (ml):</span>
+        <input type="number" id="daily-goal" min="500" max="5000" step="100" value="2000">
+      </div>
+      
+      <div class="setting-item">
+        <span class="setting-label">Reminder Interval:</span>
+        <select id="reminder-interval">
+          <option value="1800000">Every 30 minutes</option>
+          <option value="2700000">Every 45 minutes</option>
+          <option value="3600000" selected>Every 1 hour</option>
+          <option value="5400000">Every 1.5 hours</option>
+          <option value="7200000">Every 2 hours</option>
+        </select>
+      </div>
+      
+      <div class="setting-item">
+        <span class="setting-label">Reminders Active:</span>
+        <label class="switch">
+          <input type="checkbox" id="reminders-active" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+    
+    <div class="button-container">
+      <button id="save-settings">Save Settings 💾</button>
+      <button id="close-window">Close 🚪</button>
+    </div>
+  </div>
+
+  <script>
+    // Load current settings when the page loads
+    document.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const stats = await window.electronAPI.getWaterStats();
+        
+        // Set form values based on current settings
+        document.getElementById('daily-goal').value = stats.settings.dailyGoal;
+        document.getElementById('reminder-interval').value = stats.settings.reminderInterval;
+        document.getElementById('reminders-active').checked = stats.settings.isReminderActive;
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      }
+    });
+    
+    // Save settings when the save button is clicked
+    document.getElementById('save-settings').addEventListener('click', async () => {
+      try {
+        const dailyGoal = parseInt(document.getElementById('daily-goal').value);
+        const reminderInterval = parseInt(document.getElementById('reminder-interval').value);
+        const remindersActive = document.getElementById('reminders-active').checked;
+        
+        // Send settings to main process
+        window.electronAPI.setWaterGoal(dailyGoal);
+        window.electronAPI.setReminderInterval(reminderInterval);
+        
+        // Start or stop reminders based on setting
+        if (remindersActive) {
+          window.electronAPI.startWaterReminders();
+        } else {
+          window.electronAPI.stopWaterReminders();
+        }
+        
+        // Show confirmation
+        alert('Settings saved successfully!');
+      } catch (error) {
+        console.error('Error saving settings:', error);
+        alert('Error saving settings. Please try again.');
+      }
+    });
+    
+    // Close window when close button is clicked
+    document.getElementById('close-window').addEventListener('click', () => {
+      window.close();
+    });
+  </script>
+</body>
+</html>
