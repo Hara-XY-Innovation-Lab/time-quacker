@@ -3,13 +3,9 @@
 **time-quacker** is a desktop application built with **Electron** that leverages hand gesture recognition to announce the current time and automate various actions. Designed for productivity and accessibility, it provides a hands-free way to interact with your computer.
 
 <a href="https://www.producthunt.com/products/time-quacker?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-time&#0045;quacker" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1011738&theme=light&t=1756739336200" alt="Time&#0032;quacker - Time&#0045;quacker&#0058;&#0032;hand&#0045;gesture&#0032;app&#0032;for&#0032;hands&#0045;free&#0032;productivity | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-
 <a href="https://superlaun.ch/products/648" target="_blank" rel="noopener">
   <img src="https://superlaun.ch/badge.png" alt="Featured on Super Launch" width="300" height="300" />
 </a>
-
-
-
 **GitHub Repository:**  
 [github.com/Hara-XY-Innovation-Lab/time-quacker/tree/main](https://github.com/10sp/time-quacker/tree/main)
 
